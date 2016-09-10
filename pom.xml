@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+ 	<parent>
+		<groupId>sc.fiji</groupId>
+		<artifactId>pom-fiji</artifactId>
+		<version>26.1.0</version>
+	</parent>
+ 
+ 	<properties>
+		<enforcer.skip>true</enforcer.skip>
+		<jung2.version>2.0.1</jung2.version>
+		<scijava.jvm.version>1.8</scijava.jvm.version>
+	</properties>	
+
+	<groupId>com.indago.tr2d</groupId>
+	<artifactId>Tr2dRunHernan</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+
+	<name>Tr2dRunHernan</name>
+	<description>Runs tr2d set up to suit Hernan's needs.</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.indago</groupId>
+			<artifactId>Indago</artifactId>
+			<version>0.1.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.indago</groupId>
+			<artifactId>tr2d</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+		
+		<!-- SEGMENTATION PLUGINS -->
+		<dependency>
+			<groupId>com.indago.tr2d</groupId>
+			<artifactId>Tr2dWekaSegmenterPlugin</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
+	<developers>
+		<developer>
+			<id>jug</id>
+			<name>Florian Jug</name>
+			<email>florian.jug@gmail.com</email>
+			<url>http://www.myerslab.mpi-cbg.de</url>
+			<organization>MPI-CBG</organization>
+			<organizationUrl>http://www.mpi-cbg.de/</organizationUrl>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
+
+	<repositories>
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+	</repositories>
+</project>
