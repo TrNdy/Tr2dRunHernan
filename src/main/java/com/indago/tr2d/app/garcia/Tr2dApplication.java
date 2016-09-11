@@ -140,7 +140,6 @@ public class Tr2dApplication {
 		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
 		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
 		mainPanel = new Tr2dMainPanel( guiFrame, model );
-		model.setRefToMainPanel( mainPanel );
 
 		guiFrame.getContentPane().add( mainPanel );
 		setFrameSizeAndCloseOperation();
