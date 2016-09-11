@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.apple.eawt.Application;
 import com.indago.io.ImageSaver;
+import com.indago.log.LoggingPanel;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
@@ -97,7 +98,6 @@ public class Tr2dApplication {
 			}
 
 			// Create context (since we did not receive one that was injected in 'Tr2dPlugin')
-//			final Context context = new Context( OpService.class, OpMatchingService.class );
 			final Context context =
 					new Context( OpService.class, OpMatchingService.class, IOService.class, DatasetIOService.class, LocationService.class, DatasetService.class, ImgUtilityService.class, StatusService.class, TranslatorService.class, QTJavaService.class, TiffService.class, CodecService.class, JAIIIOService.class, LogService.class, Tr2dSegmentationPluginService.class );
 			ImageSaver.context = context;
@@ -109,24 +109,21 @@ public class Tr2dApplication {
 			global_log = context.getService( LogService.class );
 			global_log.info( "STANDALONE" );
 
-			// GET THE APP SPECIFIC LOGGER
-			// ---------------------------
-			log = LoggerFactory.getLogger( "app" );
 		} else {
 			// GET THE GLOBAL LOGGER
 			// ---------------------
 			global_log = ops.getContext().getService( LogService.class );
 			global_log.info( "PLUGIN" );
 
-			// GET THE APP SPECIFIC LOGGER
-			// ---------------------------
-			log = LoggerFactory.getLogger( "app" );
-
 			// Check that all is set as it should...
 			if ( segPlugins == null ) {
 				log.error( "Tr2dPlugin failed to set the Tr2dSegmentationPluginService!" );
 			}
 		}
+
+		// GET THE APP SPECIFIC LOGGER
+		// ---------------------------
+		log = LoggerFactory.getLogger( "tr2d" );
 
 		checkGurobiAvailability();
 		parseCommandLineArgs( args );
@@ -143,6 +140,7 @@ public class Tr2dApplication {
 		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
 		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
 		mainPanel = new Tr2dMainPanel( guiFrame, model );
+		model.setRefToMainPanel( mainPanel );
 
 		guiFrame.getContentPane().add( mainPanel );
 		setFrameSizeAndCloseOperation();
@@ -529,5 +527,19 @@ public class Tr2dApplication {
 	 */
 	public static JFrame getGuiFrame() {
 		return guiFrame;
+	}
+
+	/**
+	 * @return the mainPanel
+	 */
+	public static Tr2dMainPanel getMainPanel() {
+		return mainPanel;
+	}
+
+	/**
+	 * @return the mainPanel
+	 */
+	public static LoggingPanel getLogPanel() {
+		return mainPanel.getLogPanel();
 	}
 }
