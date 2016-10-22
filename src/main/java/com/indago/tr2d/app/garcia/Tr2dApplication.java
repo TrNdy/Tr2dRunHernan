@@ -12,6 +12,7 @@ import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.apache.commons.cli.BasicParser;
@@ -50,6 +51,7 @@ import io.scif.formats.qt.QTJavaService;
 import io.scif.formats.tiff.TiffService;
 import io.scif.img.ImgUtilityService;
 import io.scif.services.DatasetIOService;
+import io.scif.services.FormatService;
 import io.scif.services.JAIIIOService;
 import io.scif.services.LocationService;
 import io.scif.services.TranslatorService;
@@ -99,7 +101,7 @@ public class Tr2dApplication {
 
 			// Create context (since we did not receive one that was injected in 'Tr2dPlugin')
 			final Context context =
-					new Context( OpService.class, OpMatchingService.class, IOService.class, DatasetIOService.class, LocationService.class, DatasetService.class, ImgUtilityService.class, StatusService.class, TranslatorService.class, QTJavaService.class, TiffService.class, CodecService.class, JAIIIOService.class, LogService.class, Tr2dSegmentationPluginService.class );
+					new Context( FormatService.class, OpService.class, OpMatchingService.class, IOService.class, DatasetIOService.class, LocationService.class, DatasetService.class, ImgUtilityService.class, StatusService.class, TranslatorService.class, QTJavaService.class, TiffService.class, CodecService.class, JAIIIOService.class, LogService.class, Tr2dSegmentationPluginService.class );
 			ImageSaver.context = context;
 			ops = context.getService( OpService.class );
 			segPlugins = context.getService( Tr2dSegmentationPluginService.class );
@@ -137,14 +139,21 @@ public class Tr2dApplication {
 		Tr2dContext.ops = ops;
 		Tr2dContext.guiFrame = guiFrame;
 
-		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
-		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
-		mainPanel = new Tr2dMainPanel( guiFrame, model );
+		SwingUtilities.invokeLater( new Runnable() {
 
-		guiFrame.getContentPane().add( mainPanel );
-		setFrameSizeAndCloseOperation();
-		guiFrame.setVisible( true );
-		mainPanel.collapseLog();
+			@Override
+			public void run() {
+				final ImagePlus imgPlus = openStackOrProjectUserInteraction();
+
+				final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
+				mainPanel = new Tr2dMainPanel( guiFrame, model );
+
+				guiFrame.getContentPane().add( mainPanel );
+				setFrameSizeAndCloseOperation();
+				guiFrame.setVisible( true );
+				mainPanel.collapseLog();
+			}
+		} );
 	}
 
 	private static void setFrameSizeAndCloseOperation() {
