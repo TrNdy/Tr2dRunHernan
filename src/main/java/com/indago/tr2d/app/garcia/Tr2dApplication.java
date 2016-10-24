@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.apple.eawt.Application;
-import com.indago.io.ImageSaver;
 import com.indago.log.LoggingPanel;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
@@ -102,7 +101,7 @@ public class Tr2dApplication {
 			// Create context (since we did not receive one that was injected in 'Tr2dPlugin')
 			final Context context =
 					new Context( FormatService.class, OpService.class, OpMatchingService.class, IOService.class, DatasetIOService.class, LocationService.class, DatasetService.class, ImgUtilityService.class, StatusService.class, TranslatorService.class, QTJavaService.class, TiffService.class, CodecService.class, JAIIIOService.class, LogService.class, Tr2dSegmentationPluginService.class );
-			ImageSaver.context = context;
+//			ImageSaver.context = context;
 			ops = context.getService( OpService.class );
 			segPlugins = context.getService( Tr2dSegmentationPluginService.class );
 

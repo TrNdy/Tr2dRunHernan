@@ -6,7 +6,6 @@ import org.scijava.log.slf4j.SLF4JLogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import com.indago.io.ImageSaver;
 import com.indago.tr2d.app.garcia.Tr2dApplication;
 import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
 
@@ -39,7 +38,7 @@ public class Tr2dPlugin implements Command {
 		Tr2dApplication.ops = opService;
 		Tr2dApplication.segPlugins = opService.context().getService( Tr2dSegmentationPluginService.class );
 
-		ImageSaver.context = opService.context();
+//		ImageSaver.context = opService.context();
 
 		try {
 			Tr2dApplication.main( null );
