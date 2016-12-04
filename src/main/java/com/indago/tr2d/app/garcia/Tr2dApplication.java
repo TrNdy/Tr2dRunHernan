@@ -12,7 +12,6 @@ import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.apache.commons.cli.BasicParser;
@@ -138,21 +137,15 @@ public class Tr2dApplication {
 		Tr2dContext.ops = ops;
 		Tr2dContext.guiFrame = guiFrame;
 
-		SwingUtilities.invokeLater( new Runnable() {
+		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
 
-			@Override
-			public void run() {
-				final ImagePlus imgPlus = openStackOrProjectUserInteraction();
+		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
+		mainPanel = new Tr2dMainPanel( guiFrame, model );
 
-				final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
-				mainPanel = new Tr2dMainPanel( guiFrame, model );
-
-				guiFrame.getContentPane().add( mainPanel );
-				setFrameSizeAndCloseOperation();
-				guiFrame.setVisible( true );
-				mainPanel.collapseLog();
-			}
-		} );
+		guiFrame.getContentPane().add( mainPanel );
+		setFrameSizeAndCloseOperation();
+		guiFrame.setVisible( true );
+		mainPanel.collapseLog();
 	}
 
 	private static void setFrameSizeAndCloseOperation() {
@@ -210,59 +203,56 @@ public class Tr2dApplication {
 		File projectFolderBasePath = null;
 		if ( projectFolder != null ) projectFolderBasePath = projectFolder.getFolder();
 
-		if ( inputStack == null ) {
-			final Object[] options = { "Tr2d Project...", "TIFF Stack..." };
-			final int choice = JOptionPane.showOptionDialog(
+		final Object[] options = { "Tr2d Project...", "TIFF Stack..." };
+		final int choice = JOptionPane.showOptionDialog(
+				guiFrame,
+				"Please choose an input type to be opened.",
+				"Open...",
+				JOptionPane.DEFAULT_OPTION,
+				JOptionPane.QUESTION_MESSAGE,
+				null,
+				options,
+				options[ 0 ] );
+		if ( choice == 0 ) { // ===== PROJECT =====
+			UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
+			projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
 					guiFrame,
-					"Please choose an input type to be opened.",
-					"Open...",
-					JOptionPane.DEFAULT_OPTION,
-					JOptionPane.QUESTION_MESSAGE,
-					null,
-					options,
-					options[ 0 ] );
-			if ( choice == 0 ) {
-				UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
-				projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
-						guiFrame,
-						"",
-						"Choose tr2d project folder..." );
-				UniversalFileChooser.showOptionPaneWithTitleOnMac = true;
-				if ( projectFolderBasePath == null ) {
-					Tr2dApplication.quit( 1 );
-				}
-				try {
-					projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
-					inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();
-					if ( !inputStack.canRead() || !inputStack.exists() ) {
-						final String msg = "Invalid project folder -- missing RAW data or read protected!";
-						JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-						Tr2dApplication.log.error( msg );
-						Tr2dApplication.quit( 1 );
-					}
-				} catch ( final IOException e ) {
-					Tr2dApplication.log
-							.error( String.format( "Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
-					e.printStackTrace();
-					Tr2dApplication.quit( 1 );
-				}
-			} else if ( choice == 1 ) {
-				inputStack = UniversalFileChooser.showLoadFileChooser(
-						guiFrame,
-						"",
-						"Load input tiff stack...",
-						new ExtensionFileFilter( "tif", "TIFF Image Stack" ) );
+					"",
+					"Choose tr2d project folder..." );
+			UniversalFileChooser.showOptionPaneWithTitleOnMac = true;
+			if ( projectFolderBasePath == null ) {
+				Tr2dApplication.quit( 1 );
 			}
+			try {
+				projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
+				inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();
+				if ( !inputStack.canRead() || !inputStack.exists() ) {
+					final String msg = "Invalid project folder -- missing RAW data or read protected!";
+					JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
+					Tr2dApplication.log.error( msg );
+					Tr2dApplication.quit( 1 );
+				}
+			} catch ( final IOException e ) {
+				Tr2dApplication.log
+						.error( String.format( "Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
+				e.printStackTrace();
+				Tr2dApplication.quit( 1 );
+			}
+		} else if ( choice == 1 ) { // ===== TIFF STACK =====
+			inputStack = UniversalFileChooser.showLoadFileChooser(
+					guiFrame,
+					"",
+					"Load input tiff stack...",
+					new ExtensionFileFilter( "tif", "TIFF Image Stack" ) );
 			if ( inputStack == null ) {
 				Tr2dApplication.quit( 1 );
 			}
-		}
-		if ( projectFolderBasePath == null ) {
+
 			boolean validSelection = false;
 			while ( !validSelection ) {
 				projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
 						guiFrame,
-						"",
+						inputStack.getParent(),
 						"Choose tr2d project folder..." );
 				if ( projectFolderBasePath == null ) {
 					Tr2dApplication.quit( 2 );
@@ -277,7 +267,7 @@ public class Tr2dApplication {
 				}
 				if ( projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).exists() ) {
 					final String msg = String.format(
-							"Chosen project folder exists (%s)./nShould this project be overwritten?\nAll data in this project will be overwritten...",
+							"Chosen project folder exists (%s).\nShould this project be overwritten?\nCurrent data in this project will be lost!",
 							projectFolderBasePath );
 					final int overwrite = JOptionPane.showConfirmDialog( guiFrame, msg, "Project Folder Exists", JOptionPane.YES_NO_OPTION );
 					if ( overwrite == JOptionPane.YES_OPTION ) {
@@ -307,11 +297,11 @@ public class Tr2dApplication {
 	private static void setImageAppIcon() {
 		Image image = null;
 		try {
-			image = new ImageIcon( Tr2dApplication.class.getClassLoader().getResource( "IconMpiCbg128.png" ) ).getImage();
+			image = new ImageIcon( Tr2dApplication.class.getClassLoader().getResource( "tr2d_dais_icon_color.png" ) ).getImage();
 		} catch ( final Exception e ) {
 			try {
 				image = new ImageIcon( Tr2dApplication.class.getClassLoader().getResource(
-						"resources/IconMpiCbg128.png" ) ).getImage();
+						"resources/tr2d_dais_icon_color.png" ) ).getImage();
 			} catch ( final Exception e2 ) {
 				Tr2dApplication.log.error( "app icon not found..." );
 			}
