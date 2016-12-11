@@ -138,14 +138,18 @@ public class Tr2dApplication {
 		Tr2dContext.guiFrame = guiFrame;
 
 		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
+		if ( imgPlus != null ) {
+			final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
+			mainPanel = new Tr2dMainPanel( guiFrame, model );
 
-		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
-		mainPanel = new Tr2dMainPanel( guiFrame, model );
-
-		guiFrame.getContentPane().add( mainPanel );
-		setFrameSizeAndCloseOperation();
-		guiFrame.setVisible( true );
-		mainPanel.collapseLog();
+			guiFrame.getContentPane().add( mainPanel );
+			setFrameSizeAndCloseOperation();
+			guiFrame.setVisible( true );
+			mainPanel.collapseLog();
+		} else {
+			guiFrame.dispose();
+			if ( isStandalone ) System.exit( 0 );
+		}
 	}
 
 	private static void setFrameSizeAndCloseOperation() {
@@ -280,11 +284,14 @@ public class Tr2dApplication {
 			projectFolder.restartWithRawDataFile( inputStack.getAbsolutePath() );
 		}
 
-//		IJ.open( inputStack.getAbsolutePath() );
-		final ImagePlus imgPlus = IJ.openImage( inputStack.getAbsolutePath() );
-		if ( imgPlus == null ) {
-			IJ.error( "There must be an active, open window!" );
-			Tr2dApplication.quit( 4 );
+		ImagePlus imgPlus = null;
+		if ( inputStack != null ) {
+//			IJ.open( inputStack.getAbsolutePath() );
+			imgPlus = IJ.openImage( inputStack.getAbsolutePath() );
+			if ( imgPlus == null ) {
+				IJ.error( "There must be an active, open window!" );
+				Tr2dApplication.quit( 4 );
+			}
 		}
 
 		UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
