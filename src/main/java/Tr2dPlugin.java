@@ -17,7 +17,7 @@ import net.imagej.ops.OpService;
  * @author Florian Jug
  */
 
-@Plugin( type = ContextCommand.class, headless = false, menuPath = "Plugins>Tracking>Tr2d 0.1 (alpha)" )
+@Plugin( type = ContextCommand.class, headless = false, menuPath = "Plugins>Tracking>Tr2d 0.2" )
 public class Tr2dPlugin implements Command {
 
 	@Parameter
