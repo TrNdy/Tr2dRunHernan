@@ -137,7 +137,8 @@ public class Tr2dApplication {
 		Tr2dContext.ops = ops;
 		Tr2dContext.guiFrame = guiFrame;
 
-		openStackOrProjectUserInteraction();
+		if(projectFolder == null || inputStack == null)
+			openStackOrProjectUserInteraction();
 
 		final ImagePlus imgPlus = openImageStack();
 
@@ -497,8 +498,7 @@ public class Tr2dApplication {
 			}
 		} catch ( final IOException e ) {
 			e.printStackTrace();
-			showErrorAndExit(8, "Project folder (%s) could not be initialized.",
-					projectFolderBasePath.getAbsolutePath() );
+			showErrorAndExit(8, "Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
 		}
 	}
 
