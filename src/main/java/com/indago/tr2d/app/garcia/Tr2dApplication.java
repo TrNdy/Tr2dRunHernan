@@ -137,7 +137,10 @@ public class Tr2dApplication {
 		Tr2dContext.ops = ops;
 		Tr2dContext.guiFrame = guiFrame;
 
-		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
+		openStackOrProjectUserInteraction();
+
+		final ImagePlus imgPlus = openImageStack();
+
 		if ( imgPlus != null ) {
 			final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
 			mainPanel = new Tr2dMainPanel( guiFrame, model );
@@ -201,7 +204,7 @@ public class Tr2dApplication {
 	/**
 	 * @return
 	 */
-	private static ImagePlus openStackOrProjectUserInteraction() {
+	private static void openStackOrProjectUserInteraction() {
 		UniversalFileChooser.showOptionPaneWithTitleOnMac = true;
 
 		File projectFolderBasePath = null;
@@ -227,21 +230,7 @@ public class Tr2dApplication {
 			if ( projectFolderBasePath == null ) {
 				Tr2dApplication.quit( 1 );
 			}
-			try {
-				projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
-				inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();
-				if ( !inputStack.canRead() || !inputStack.exists() ) {
-					final String msg = "Invalid project folder -- missing RAW data or read protected!";
-					JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-					Tr2dApplication.log.error( msg );
-					Tr2dApplication.quit( 1 );
-				}
-			} catch ( final IOException e ) {
-				Tr2dApplication.log
-						.error( String.format( "Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
-				e.printStackTrace();
-				Tr2dApplication.quit( 1 );
-			}
+			openProjectFolder(projectFolderBasePath);
 		} else if ( choice == 1 ) { // ===== TIFF STACK =====
 			inputStack = UniversalFileChooser.showLoadFileChooser(
 					guiFrame,
@@ -284,6 +273,10 @@ public class Tr2dApplication {
 			projectFolder.restartWithRawDataFile( inputStack.getAbsolutePath() );
 		}
 
+		UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
+	}
+
+	private static ImagePlus openImageStack() {
 		ImagePlus imgPlus = null;
 		if ( inputStack != null ) {
 //			IJ.open( inputStack.getAbsolutePath() );
@@ -293,8 +286,6 @@ public class Tr2dApplication {
 				Tr2dApplication.quit( 4 );
 			}
 		}
-
-		UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
 		return imgPlus;
 	}
 
@@ -433,84 +424,44 @@ public class Tr2dApplication {
 		File projectFolderBasePath = null;
 		if ( cmd.hasOption( "p" ) ) {
 			projectFolderBasePath = new File( cmd.getOptionValue( "p" ) );
-			if ( !projectFolderBasePath.exists() ) {
-				final String msg = "Given project folder does not exist!";
-				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				Tr2dApplication.log.error( msg );
-				Tr2dApplication.quit( 1 );
-			}
-			if ( !projectFolderBasePath.isDirectory() ) {
-				final String msg = "Given project folder is not a folder!";
-				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				Tr2dApplication.log.error( msg );
-				Tr2dApplication.quit( 2 );
-			}
-			if ( !projectFolderBasePath.canWrite() ) {
-				final String msg = "Given project folder cannot be written to!";
-				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				Tr2dApplication.log.error( msg );
-				Tr2dApplication.quit( 3 );
-			}
+			if ( !projectFolderBasePath.exists() )
+				showErrorAndExit(1, "Given project folder does not exist!");
+			if ( !projectFolderBasePath.isDirectory() )
+				showErrorAndExit(2, "Given project folder is not a folder!");
+			if ( !projectFolderBasePath.canWrite() )
+				showErrorAndExit(3, "Given project folder cannot be written to!");
 		}
 
 		inputStack = null;
 		if ( cmd.hasOption( "i" ) ) {
 			inputStack = new File( cmd.getOptionValue( "i" ) );
-			if ( !inputStack.isFile() ) {
-				final String msg = "Given input tiff stack could not be found!";
-				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				Tr2dApplication.log.error( msg );
-				Tr2dApplication.quit( 5 );
-			}
-			if ( !inputStack.canRead() ) {
-				final String msg = "Given input tiff stack is not readable!";
-				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				Tr2dApplication.log.error( msg );
-				Tr2dApplication.quit( 6 );
-			}
+			if ( !inputStack.isFile() )
+				showErrorAndExit(5, "Given input tiff stack could not be found!");
+			if ( !inputStack.canRead() )
+				showErrorAndExit(6, "Given input tiff stack is not readable!");
 		} else if ( projectFolderBasePath != null ) { // if a project folder was given load data from there!
-			try {
-				projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
-				inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();
-				if ( !inputStack.canRead() ) {
-					final String msg = String.format( "No raw tiff stack found in given project folder (%s)!", projectFolderBasePath );
-					JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-					Tr2dApplication.log.error( msg );
-					Tr2dApplication.quit( 7 );
-				}
-			} catch ( final IOException e ) {
-				Tr2dApplication.log
-						.error( String.format( "Project folder (%s) could not used to load data from.", projectFolderBasePath.getAbsolutePath() ) );
-				e.printStackTrace();
-				Tr2dApplication.quit( 8 );
-			}
+			openProjectFolder(projectFolderBasePath);
 		}
 
 		fileUserProps = null;
 		if ( cmd.hasOption( "uprops" ) ) {
 			fileUserProps = new File( cmd.getOptionValue( "uprops" ) );
-			if ( !inputStack.canRead() ) {
-				final String msg = String.format( "User properties file not readable (%s). Continue without...", fileUserProps.getAbsolutePath() );
-				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Warning", JOptionPane.WARNING_MESSAGE );
-				Tr2dApplication.log.warn( msg );
-			}
+			if ( !inputStack.canRead() )
+				showWarning( "User properties file not readable (%s). Continue without...",
+						fileUserProps.getAbsolutePath() );
 		}
 
 		if ( cmd.hasOption( "tmin" ) ) {
 			minTime = Integer.parseInt( cmd.getOptionValue( "tmin" ) );
-			if ( minTime < 0 ) {
-				final String msg = "Argument 'tmin' cannot be smaller than 0... using tmin=0...";
-				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Warning", JOptionPane.WARNING_MESSAGE );
-				Tr2dApplication.log.warn( msg );
-			}
+			if ( minTime < 0 )
+				showWarning("Argument 'tmin' cannot be smaller than 0... using tmin=0...");
 		}
 		if ( cmd.hasOption( "tmax" ) ) {
 			maxTime = Integer.parseInt( cmd.getOptionValue( "tmax" ) );
 			if ( maxTime < minTime ) {
 				maxTime = minTime + 1;
-				final String msg = String.format( "Argument 'tmax' cannot be smaller than 'tmin'... using tmax=%d...", maxTime );
-				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Warning", JOptionPane.WARNING_MESSAGE );
-				Tr2dApplication.log.warn( msg );
+				showWarning( "Argument 'tmax' cannot be smaller than 'tmin'... using tmax=%d...",
+						maxTime );
 			}
 		}
 
@@ -518,11 +469,36 @@ public class Tr2dApplication {
 			initOptRange = Integer.parseInt( cmd.getOptionValue( "orange" ) );
 			if ( initOptRange > maxTime - minTime ) {
 				initOptRange = maxTime - minTime;
-				final String msg =
-						String.format( "Argument 'orange' (initial optimization range in frames) too large... using %d instead...", initOptRange );
-				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Warning", JOptionPane.WARNING_MESSAGE );
-				Tr2dApplication.log.warn( msg );
+				showWarning( "Argument 'orange' (initial optimization range in frames)" +
+						" too large... using %d instead...", initOptRange );
 			}
+		}
+	}
+
+	private static void showWarning(String msg, Object... data) {
+		JOptionPane.showMessageDialog( guiFrame, String.format(msg, data),
+				"Argument Warning", JOptionPane.WARNING_MESSAGE );
+		Tr2dApplication.log.warn( msg );
+	}
+
+	private static void showErrorAndExit(int exit_value, String msg, Object... data) {
+		JOptionPane.showMessageDialog(guiFrame, String.format(msg, data),
+				"Argument Error", JOptionPane.ERROR_MESSAGE);
+		Tr2dApplication.log.error(msg);
+		Tr2dApplication.quit(exit_value);
+	}
+
+	private static void openProjectFolder(File projectFolderBasePath) {
+		try {
+			projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
+			inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();
+			if ( !inputStack.canRead() || !inputStack.exists() ) {
+				showErrorAndExit(7, "Invalid project folder -- missing RAW data or read protected!");
+			}
+		} catch ( final IOException e ) {
+			e.printStackTrace();
+			showErrorAndExit(8, "Project folder (%s) could not be initialized.",
+					projectFolderBasePath.getAbsolutePath() );
 		}
 	}
 
