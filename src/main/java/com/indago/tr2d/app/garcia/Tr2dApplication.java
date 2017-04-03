@@ -77,6 +77,7 @@ public class Tr2dApplication {
 	private static Tr2dProjectFolder projectFolder;
 
 	private static File fileUserProps;
+	private static File exportFolder;
 	private static int minTime = 0;
 	private static int maxTime = Integer.MAX_VALUE;
 	private static int initOptRange = Integer.MAX_VALUE;
@@ -180,6 +181,8 @@ public class Tr2dApplication {
 						options,
 						options[ 0 ] );
 				if ( choice == 0 ) {
+					runOptionalExport();
+
 					try {
 						FrameProperties.save( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
 					} catch ( final Exception e ) {
@@ -192,11 +195,17 @@ public class Tr2dApplication {
 		} );
 	}
 
+	private static void runOptionalExport() {
+		if( exportFolder != null )
+			mainPanel.getExportPanel().schnitzcellExport(exportFolder);
+	}
+
 	/**
 	 * @param i
 	 */
 	public static void quit( final int exit_value ) {
-		guiFrame.dispose();
+		if(guiFrame != null)
+			guiFrame.dispose();
 		if ( isStandalone ) {
 			System.exit( exit_value );
 		}
@@ -369,11 +378,10 @@ public class Tr2dApplication {
 	 */
 	private static void parseCommandLineArgs( final String[] args ) {
 		final String helpMessageLine1 =
-				"Tr2d args: [-uprops properties-file] -p project-folder [-i input-stack] [-tmin idx] [-tmax idx] [-orange num-frames]";
+				"Tr2d args: [-uprops properties-file] -p project-folder [-i input-stack] [-tmin idx] [-tmax idx] [-orange num-frames] [-e export-folder]";
 
 		// create Options object & the parser
 		final Options options = new Options();
-		final CommandLineParser parser = new BasicParser();
 		// defining command line options
 		final Option help = new Option( "help", "print this message" );
 
@@ -395,6 +403,9 @@ public class Tr2dApplication {
 		final Option userProps = new Option( "uprops", "userprops", true, "user properties file to be loaded" );
 		userProps.setRequired( false );
 
+		final Option exportFolder = new Option( "e", "export_folder", true, "Write results to this folder when closing tr2d." );
+		exportFolder.setRequired( false );
+
 		options.addOption( help );
 		options.addOption( timeFirst );
 		options.addOption( timeLast );
@@ -402,9 +413,11 @@ public class Tr2dApplication {
 		options.addOption( instack );
 		options.addOption( projectfolder );
 		options.addOption( userProps );
+		options.addOption( exportFolder );
 		// get the commands parsed
 		CommandLine cmd = null;
 		try {
+			final CommandLineParser parser = new BasicParser();
 			cmd = parser.parse( options, args );
 		} catch ( final ParseException e1 ) {
 			final HelpFormatter formatter = new HelpFormatter();
@@ -422,16 +435,9 @@ public class Tr2dApplication {
 			Tr2dApplication.quit( 0 );
 		}
 
-		File projectFolderBasePath = null;
-		if ( cmd.hasOption( "p" ) ) {
-			projectFolderBasePath = new File( cmd.getOptionValue( "p" ) );
-			if ( !projectFolderBasePath.exists() )
-				showErrorAndExit(1, "Given project folder does not exist!");
-			if ( !projectFolderBasePath.isDirectory() )
-				showErrorAndExit(2, "Given project folder is not a folder!");
-			if ( !projectFolderBasePath.canWrite() )
-				showErrorAndExit(3, "Given project folder cannot be written to!");
-		}
+		File projectFolderBasePath = checkWritableFolderOption(cmd, "p", "project folder");
+
+		Tr2dApplication.exportFolder = checkWritableFolderOption(cmd, "e", "project folder");
 
 		inputStack = null;
 		if ( cmd.hasOption( "i" ) ) {
@@ -476,6 +482,20 @@ public class Tr2dApplication {
 		}
 	}
 
+	private static File checkWritableFolderOption(CommandLine cmd, String shortOption, String displayName) {
+		File result = null;
+		if ( cmd.hasOption( shortOption ) ) {
+			result = new File( cmd.getOptionValue( shortOption ) );
+			if ( !result.exists() )
+				showErrorAndExit(1, "Given " + displayName + " does not exist!");
+			if ( !result.isDirectory() )
+				showErrorAndExit(2, "Given " + displayName + " is not a folder!");
+			if ( !result.canWrite() )
+				showErrorAndExit(3, "Given " + displayName + " cannot be written to!");
+		}
+		return result;
+	}
+
 	private static void showWarning(String msg, Object... data) {
 		JOptionPane.showMessageDialog( guiFrame, String.format(msg, data),
 				"Argument Warning", JOptionPane.WARNING_MESSAGE );
@@ -498,7 +518,7 @@ public class Tr2dApplication {
 			}
 		} catch ( final IOException e ) {
 			e.printStackTrace();
-			showErrorAndExit(8, "Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
+			showErrorAndExit(8, "Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() );
 		}
 	}
 
