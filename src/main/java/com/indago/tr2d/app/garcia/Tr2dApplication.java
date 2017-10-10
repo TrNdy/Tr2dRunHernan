@@ -81,6 +81,8 @@ public class Tr2dApplication {
 	private static int maxTime = Integer.MAX_VALUE;
 	private static int initOptRange = Integer.MAX_VALUE;
 
+	private static boolean autoRun = false;
+
 	public static OpService ops = null;
 	public static Tr2dSegmentationPluginService segPlugins = null;
 
@@ -157,6 +159,11 @@ public class Tr2dApplication {
 			setFrameSizeAndCloseOperation();
 			guiFrame.setVisible( true );
 			mainPanel.collapseLog();
+
+			if ( autoRun ) {
+				mainPanel.selectTab( mainPanel.getTabTracking() );
+				model.getTrackingModel().runInThread( false );
+			}
 		} else {
 			guiFrame.dispose();
 			if ( isStandalone ) System.exit( 0 );
@@ -398,6 +405,9 @@ public class Tr2dApplication {
 		final Option instack = new Option( "i", "input", true, "tiff stack to be read" );
 		instack.setRequired( false );
 
+		final Option run = new Option( "r", "run", false, "auto-run tracking upon start" );
+		instack.setRequired( false );
+
 		final Option userProps = new Option( "uprops", "userprops", true, "user properties file to be loaded" );
 		userProps.setRequired( false );
 
@@ -406,6 +416,7 @@ public class Tr2dApplication {
 		options.addOption( timeLast );
 		options.addOption( optRange );
 		options.addOption( instack );
+		options.addOption( run );
 		options.addOption( projectfolder );
 		options.addOption( userProps );
 		// get the commands parsed
@@ -521,6 +532,10 @@ public class Tr2dApplication {
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Warning", JOptionPane.WARNING_MESSAGE );
 				Tr2dApplication.log.warn( msg );
 			}
+		}
+
+		if ( cmd.hasOption( "run" ) ) {
+			autoRun = true;
 		}
 	}
 
