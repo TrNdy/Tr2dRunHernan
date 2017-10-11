@@ -5,14 +5,13 @@
 	<parent>
 		<groupId>sc.fiji</groupId>
 		<artifactId>pom-indago</artifactId>
-		<version>1.0.3</version>
+		<version>2.0.1</version>
 	</parent>
- 
- 	<properties>
-		<enforcer.skip>true</enforcer.skip>
-		<jung2.version>2.0.1</jung2.version>
-		<scijava.jvm.version>1.8</scijava.jvm.version>
-	</properties>	
+
+	<properties>
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.copyrightOwners>TrNdy developers</license.copyrightOwners>
+	</properties>
 
 	<groupId>com.indago.tr2d</groupId>
 	<artifactId>Tr2dRunHernan</artifactId>
@@ -20,6 +19,19 @@
 
 	<name>Tr2dRunHernan</name>
 	<description>Runs tr2d set up to suit Hernan's needs.</description>
+	<url>https:github.com/TrNdy/Tr2dRunHernan</url>
+	<inceptionYear>2016</inceptionYear>
+	<organization>
+		<name>TrNdy</name>
+		<url>https://github.com/TrNdy</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<url>https://opensource.org/licenses/BSD-2-Clause</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<dependencies>
 		<!-- CORE DEPENDENCIES -->
@@ -36,15 +48,6 @@
 			<artifactId>tr2d</artifactId>
 			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>net.trackmate</groupId>
-			<artifactId>trackmate</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>imagej-ops</artifactId>
-			<version>0.33.0</version>  <!--$NO-MVN-MAN-VER$-->
-		</dependency>		
 		
 		<!-- SEGMENTATION PLUGINS -->
 		<dependency>
@@ -112,6 +115,33 @@
 			<timezone>+1</timezone>
 		</developer>
 	</developers>
+	<contributors>
+		<contributor>
+			<name>Tobias Pietzsch</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>none</name>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/TrNdy/Tr2dRunHernan</connection>
+		<developerConnection>scm:git:git@github.com:TrNdy/Tr2dRunHernan</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/TrNdy/Tr2dRunHernan</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/TrNdy/Tr2dRunHernan/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/TrNdy/Tr2dRunHernan</url>
+	</ciManagement>
+
 
 	<repositories>
 		<repository>

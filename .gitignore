@@ -5,3 +5,7 @@
 .settings/
 *.log
 LoggingDemo.log.1
+
+# IntelliJ
+.idea/
+*.iml

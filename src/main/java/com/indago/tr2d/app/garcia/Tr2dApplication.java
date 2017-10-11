@@ -82,6 +82,8 @@ public class Tr2dApplication {
 	private static int maxTime = Integer.MAX_VALUE;
 	private static int initOptRange = Integer.MAX_VALUE;
 
+	private static boolean autoRun = false;
+
 	public static OpService ops = null;
 	public static Tr2dSegmentationPluginService segPlugins = null;
 
@@ -151,6 +153,11 @@ public class Tr2dApplication {
 			setFrameSizeAndCloseOperation();
 			guiFrame.setVisible( true );
 			mainPanel.collapseLog();
+
+			if ( autoRun ) {
+				mainPanel.selectTab( mainPanel.getTabTracking() );
+				model.getTrackingModel().runInThread( false );
+			}
 		} else {
 			guiFrame.dispose();
 			if ( isStandalone ) System.exit( 0 );
@@ -197,7 +204,7 @@ public class Tr2dApplication {
 
 	private static void runOptionalExport() {
 		if( exportFolder != null )
-			mainPanel.getExportPanel().schnitzcellExport(exportFolder);
+			mainPanel.getTabExport().schnitzcellExport( exportFolder );
 	}
 
 	/**
@@ -378,10 +385,11 @@ public class Tr2dApplication {
 	 */
 	private static void parseCommandLineArgs( final String[] args ) {
 		final String helpMessageLine1 =
-				"Tr2d args: [-uprops properties-file] -p project-folder [-i input-stack] [-tmin idx] [-tmax idx] [-orange num-frames] [-e export-folder]";
+				"Tr2d args: [-uprops properties-file] -p project-folder [-run] [-i input-stack] [-tmin idx] [-tmax idx] [-orange num-frames] [-e export-folder]";
 
 		// create Options object & the parser
 		final Options options = new Options();
+		final CommandLineParser parser = new BasicParser();
 		// defining command line options
 		final Option help = new Option( "help", "print this message" );
 
@@ -400,6 +408,9 @@ public class Tr2dApplication {
 		final Option instack = new Option( "i", "input", true, "tiff stack to be read" );
 		instack.setRequired( false );
 
+		final Option run = new Option( "r", "run", false, "auto-run tracking upon start" );
+		instack.setRequired( false );
+
 		final Option userProps = new Option( "uprops", "userprops", true, "user properties file to be loaded" );
 		userProps.setRequired( false );
 
@@ -411,13 +422,13 @@ public class Tr2dApplication {
 		options.addOption( timeLast );
 		options.addOption( optRange );
 		options.addOption( instack );
+		options.addOption( run );
 		options.addOption( projectfolder );
 		options.addOption( userProps );
 		options.addOption( exportFolder );
 		// get the commands parsed
 		CommandLine cmd = null;
 		try {
-			final CommandLineParser parser = new BasicParser();
 			cmd = parser.parse( options, args );
 		} catch ( final ParseException e1 ) {
 			final HelpFormatter formatter = new HelpFormatter();
@@ -435,7 +446,7 @@ public class Tr2dApplication {
 			Tr2dApplication.quit( 0 );
 		}
 
-		File projectFolderBasePath = checkWritableFolderOption(cmd, "p", "project folder");
+		final File projectFolderBasePath = checkWritableFolderOption(cmd, "p", "project folder");
 
 		Tr2dApplication.exportFolder = checkWritableFolderOption(cmd, "e", "project folder");
 
@@ -480,9 +491,13 @@ public class Tr2dApplication {
 						" too large... using %d instead...", initOptRange );
 			}
 		}
+
+		if ( cmd.hasOption( "run" ) ) {
+			autoRun = true;
+		}
 	}
 
-	private static File checkWritableFolderOption(CommandLine cmd, String shortOption, String displayName) {
+	private static File checkWritableFolderOption(final CommandLine cmd, final String shortOption, final String displayName) {
 		File result = null;
 		if ( cmd.hasOption( shortOption ) ) {
 			result = new File( cmd.getOptionValue( shortOption ) );
@@ -496,20 +511,20 @@ public class Tr2dApplication {
 		return result;
 	}
 
-	private static void showWarning(String msg, Object... data) {
+	private static void showWarning(final String msg, final Object... data) {
 		JOptionPane.showMessageDialog( guiFrame, String.format(msg, data),
 				"Argument Warning", JOptionPane.WARNING_MESSAGE );
 		Tr2dApplication.log.warn( msg );
 	}
 
-	private static void showErrorAndExit(int exit_value, String msg, Object... data) {
+	private static void showErrorAndExit(final int exit_value, final String msg, final Object... data) {
 		JOptionPane.showMessageDialog(guiFrame, String.format(msg, data),
 				"Argument Error", JOptionPane.ERROR_MESSAGE);
 		Tr2dApplication.log.error(msg);
 		Tr2dApplication.quit(exit_value);
 	}
 
-	private static void openProjectFolder(File projectFolderBasePath) {
+	private static void openProjectFolder(final File projectFolderBasePath) {
 		try {
 			projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
 			inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();
