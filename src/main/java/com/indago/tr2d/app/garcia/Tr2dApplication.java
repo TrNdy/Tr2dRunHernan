@@ -156,7 +156,7 @@ public class Tr2dApplication {
 
 			if ( autoRun ) {
 				mainPanel.selectTab( mainPanel.getTabTracking() );
-				model.getTrackingModel().runInThread( false );
+				model.getTrackingModel().runInThread( false, false );
 			}
 		} else {
 			guiFrame.dispose();
