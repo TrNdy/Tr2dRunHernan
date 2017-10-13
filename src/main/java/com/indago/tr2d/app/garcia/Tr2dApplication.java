@@ -156,6 +156,7 @@ public class Tr2dApplication {
 
 			if ( autoRun ) {
 				mainPanel.selectTab( mainPanel.getTabTracking() );
+				mainPanel.getTabTracking().createProgressDialog();
 				model.getTrackingModel().runInThread( false, false );
 			}
 		} else {
