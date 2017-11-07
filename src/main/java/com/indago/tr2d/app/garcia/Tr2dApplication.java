@@ -14,6 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
+import com.indago.log.LoggingPanel;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -25,11 +26,8 @@ import org.scijava.Context;
 import org.scijava.app.StatusService;
 import org.scijava.io.IOService;
 import org.scijava.log.LogService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.apple.eawt.Application;
-import com.indago.log.LoggingPanel;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
@@ -56,6 +54,7 @@ import io.scif.services.TranslatorService;
 import net.imagej.DatasetService;
 import net.imagej.ops.OpMatchingService;
 import net.imagej.ops.OpService;
+import org.scijava.log.Logger;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -87,7 +86,6 @@ public class Tr2dApplication {
 	public static OpService ops = null;
 	public static Tr2dSegmentationPluginService segPlugins = null;
 
-	private static LogService global_log;
 	public static Logger log;
 
 	public static void main( final String[] args ) {
@@ -107,16 +105,11 @@ public class Tr2dApplication {
 			ops = context.getService( OpService.class );
 			segPlugins = context.getService( Tr2dSegmentationPluginService.class );
 
-			// GET THE GLOBAL LOGGER
-			// ---------------------
-			global_log = context.getService( LogService.class );
-			global_log.info( "STANDALONE" );
+			log = context.getService( LogService.class ).subLogger("tr2d");
+			log.info( "STANDALONE" );
 
 		} else {
-			// GET THE GLOBAL LOGGER
-			// ---------------------
-			global_log = ops.getContext().getService( LogService.class );
-			global_log.info( "PLUGIN" );
+			log.info( "PLUGIN" );
 
 			// Check that all is set as it should...
 			if ( segPlugins == null ) {
@@ -126,7 +119,6 @@ public class Tr2dApplication {
 
 		// GET THE APP SPECIFIC LOGGER
 		// ---------------------------
-		log = LoggerFactory.getLogger( "tr2d" );
 
 		checkGurobiAvailability();
 		parseCommandLineArgs( args );
@@ -147,7 +139,7 @@ public class Tr2dApplication {
 
 		if ( imgPlus != null ) {
 			final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
-			mainPanel = new Tr2dMainPanel( guiFrame, model );
+			mainPanel = new Tr2dMainPanel( guiFrame, model, log );
 
 			guiFrame.getContentPane().add( mainPanel );
 			setFrameSizeAndCloseOperation();
