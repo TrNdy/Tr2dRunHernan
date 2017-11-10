@@ -208,7 +208,7 @@ public class Tr2dApplication {
 	}
 
 	/**
-	 * @param i
+	 * @param exit_value
 	 */
 	public static void quit( final int exit_value ) {
 		if(guiFrame != null)
