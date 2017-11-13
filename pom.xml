@@ -60,7 +60,11 @@
 			<groupId>com.indago.tr2d</groupId>
 			<artifactId>Tr2dWekaSegmenterPlugin</artifactId>
 		</dependency>
-		
+		<dependency>
+			<groupId>com.indago.tr2d</groupId>
+			<artifactId>Tr2dLabkitSegmentationPlugin</artifactId>
+		</dependency>
+
 		<!-- OTHER DEPENDENCIES -->
 		<dependency>
 			<groupId>com.indago</groupId>
