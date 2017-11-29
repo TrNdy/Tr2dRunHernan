@@ -1,8 +1,8 @@
 import javax.swing.JOptionPane;
 
+import com.indago.gurobi.GurobiInstaller;
 import org.scijava.command.Command;
 import org.scijava.command.ContextCommand;
-import org.scijava.log.LogService;
 import org.scijava.log.Logger;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -38,6 +38,7 @@ public class Tr2dPlugin implements Command {
 		Tr2dApplication.log = log;
 
 //		ImageSaver.context = opService.context();
+		GurobiInstaller.install();
 
 		try {
 			Tr2dApplication.main( null );
