@@ -18,7 +18,7 @@ import net.imagej.ops.OpService;
  * @author Florian Jug
  */
 
-@Plugin( type = ContextCommand.class, headless = false, menuPath = "Plugins>Tracking>Tr2d 0.2.2-SNAP" )
+@Plugin( type = ContextCommand.class, headless = false, menuPath = "Plugins > Tracking > Tr2d" )
 public class Tr2dPlugin implements Command {
 
 	@Parameter
@@ -32,9 +32,6 @@ public class Tr2dPlugin implements Command {
 	 */
 	@Override
 	public void run() {
-		System.setProperty( "scijava.log.level", "error" );
-		System.setProperty( "scijava.log.level:com.indago", "none" );
-
 		Tr2dApplication.isStandalone = false;
 		Tr2dApplication.ops = opService;
 		Tr2dApplication.segPlugins = opService.context().getService( Tr2dSegmentationPluginService.class );
