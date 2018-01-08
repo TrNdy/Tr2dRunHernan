@@ -14,6 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
+import com.indago.gurobi.GurobiInstaller;
 import com.indago.log.LoggingPanel;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -331,42 +332,14 @@ public class Tr2dApplication {
 	 */
 	private static void checkGurobiAvailability() {
 		final String jlp = System.getProperty( "java.library.path" );
-//		Tr2dApplication.log.info( jlp );
-		try {
-			try {
-				new GRBEnv();
-			} catch ( final GRBException e ) {
-				final String msgs = "Initial Gurobi test threw exception... check your Gruobi setup!\n\nJava library path: " + jlp;
-				JOptionPane.showMessageDialog(
-						guiFrame,
-						msgs,
-						"Gurobi Error?",
-						JOptionPane.ERROR_MESSAGE );
-				e.printStackTrace();
-				Tr2dApplication.quit( 98 );
-			} catch ( final UnsatisfiedLinkError ulr ) {
-				final String msgs =
-						"Could not initialize Gurobi.\n" + "You might not have installed Gurobi properly or you miss a valid license.\n" + "Please visit 'www.gurobi.com' for further information.\n\n" + ulr
-								.getMessage() + "\nJava library path: " + jlp;
-				JOptionPane.showMessageDialog(
-						guiFrame,
-						msgs,
-						"Gurobi Error?",
-						JOptionPane.ERROR_MESSAGE );
-				ulr.printStackTrace();
-				Tr2dApplication.log.info( ">>>>> Java library path: " + jlp );
-				Tr2dApplication.quit( 99 );
-			}
-		} catch ( final NoClassDefFoundError err ) {
-			final String msgs =
-					"Gurobi seems to be not installed on your system.\n" + "Please visit 'www.gurobi.com' for further information.\n\n" + "Java library path: " + jlp;
+		if ( !GurobiInstaller.testGurobi() ) {
+			final String msgs = "Initial Gurobi test threw exception... check your Gruobi setup!\n\nJava library path: " + jlp;
 			JOptionPane.showMessageDialog(
 					guiFrame,
 					msgs,
-					"Gurobi not installed?",
-					JOptionPane.ERROR_MESSAGE );
-			err.printStackTrace();
-			Tr2dApplication.quit( 100 );
+					"Gurobi Error?",
+					JOptionPane.ERROR_MESSAGE);
+			Tr2dApplication.quit(98);
 		}
 	}
 
