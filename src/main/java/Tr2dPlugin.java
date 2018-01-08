@@ -1,16 +1,14 @@
-import javax.swing.JOptionPane;
-
 import com.indago.gurobi.GurobiInstaller;
+import com.indago.tr2d.app.garcia.Tr2dApplication;
+import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
+import net.imagej.ops.OpService;
 import org.scijava.command.Command;
 import org.scijava.command.ContextCommand;
 import org.scijava.log.Logger;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import com.indago.tr2d.app.garcia.Tr2dApplication;
-import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
-
-import net.imagej.ops.OpService;
+import javax.swing.*;
 
 /**
  * Tr2d Plugin for Fiji/ImageJ2
@@ -37,22 +35,31 @@ public class Tr2dPlugin implements Command {
 		Tr2dApplication.segPlugins = opService.context().getService( Tr2dSegmentationPluginService.class );
 		Tr2dApplication.log = log;
 
-//		ImageSaver.context = opService.context();
-		GurobiInstaller.install();
+		boolean gurobiWorks = GurobiInstaller.install();
 
-		try {
-			Tr2dApplication.main( null );
-		} catch ( final NoClassDefFoundError err ) {
-			final String jlp = System.getProperty( "java.library.path" );
-			final String msgs =
-					"Gurobi seems to be not installed on your system.\n" + "Please visit 'www.gurobi.com' for further information.\n\n" + "Java library path: " + jlp;
-			JOptionPane.showMessageDialog(
-					null,
-					msgs,
-					"Gurobi not installed?",
-					JOptionPane.ERROR_MESSAGE );
-			err.printStackTrace();
-			Tr2dApplication.quit( 100 );
+		if(gurobiWorks) {
+			try {
+				Tr2dApplication.main( null );
+			} catch ( final NoClassDefFoundError err ) {
+				showGurobiErrorMessage( err );
+			}
 		}
+		else
+			log.warn( "Abort start of Tr2d, because Gurobi is not working properly." );
+	}
+
+	private void showGurobiErrorMessage( NoClassDefFoundError err )
+	{
+		final String jlp = System.getProperty( "java.library.path" );
+		final String msgs = "Gurobi seems to be not installed on your system.\n" +
+						"Please visit 'www.gurobi.com' for further information.\n\n" +
+						"Java library path: " + jlp;
+		JOptionPane.showMessageDialog(
+				null,
+				msgs,
+				"Gurobi not installed?",
+				JOptionPane.ERROR_MESSAGE );
+		err.printStackTrace();
+		Tr2dApplication.quit( 100 );
 	}
 }
