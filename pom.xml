@@ -84,10 +84,10 @@
 			<artifactId>AppleJavaExtensions</artifactId>
 		</dependency>
 		<!-- needed dependency for trainable weka (dunno why this is not resolved automatically) --> 
-		<!-- <dependency>
+		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>imagescience</artifactId>
-		</dependency> -->
+		</dependency>
 	</dependencies>
 
 	<developers>
