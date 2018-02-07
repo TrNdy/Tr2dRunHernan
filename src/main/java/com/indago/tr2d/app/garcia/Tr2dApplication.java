@@ -8,6 +8,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -245,7 +246,14 @@ public class Tr2dApplication {
 		boolean validSelection = false;
 		while ( !validSelection )
 			validSelection = chooseProjectFolderUserInteraction();
-		projectFolder.restartWithRawDataFile( inputStack.getAbsolutePath() );
+		try {
+			projectFolder.restartWithRawDataFile( inputStack.getAbsolutePath() );
+		} catch ( IOException | IllegalArgumentException e ) {
+			log.error( String.format( "Failed to create project folder (%s), with input stack (%s).",
+					projectFolder.getAbsolutePath(), inputStack.getAbsolutePath() ) );
+			e.printStackTrace();
+			quit( 3 );
+		}
 	}
 
 	private boolean chooseProjectFolderUserInteraction()
@@ -265,14 +273,25 @@ public class Tr2dApplication {
 			e.printStackTrace();
 			quit( 2 );
 		}
-		if ( ! projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).exists() )
-			return true;
 
-		final String msg = String.format(
-				"Chosen project folder exists (%s).\nShould this project be overwritten?\nCurrent data in this project will be lost!",
-				projectFolderBasePath );
-		final int overwrite = JOptionPane.showConfirmDialog( guiFrame, msg, "Project Folder Exists", JOptionPane.YES_NO_OPTION );
-		return overwrite == JOptionPane.YES_OPTION;
+		boolean rawFileExists = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).exists();
+		if ( rawFileExists ) {
+			final String msg = String.format(
+					"Chosen project folder exists (%s).\nShould this project be overwritten?\nCurrent data in this project will be lost!",
+					projectFolderBasePath );
+			final int overwrite = JOptionPane.showConfirmDialog( guiFrame, msg, "Project Folder Exists", JOptionPane.YES_NO_OPTION );
+			return overwrite == JOptionPane.YES_OPTION;
+		}
+		else  {
+			boolean directoryIsEmpty = projectFolderBasePath.list().length == 0;
+			if(!directoryIsEmpty)
+			{
+				final int result = JOptionPane.showConfirmDialog( guiFrame, "Chosen project folder must be empty.", "Project Folder Not Empty", JOptionPane.OK_CANCEL_OPTION );
+				if (result != JOptionPane.OK_OPTION)
+					quit( 1 );
+			}
+			return directoryIsEmpty;
+		}
 	}
 
 	private void chooseStackUserInteraction()
