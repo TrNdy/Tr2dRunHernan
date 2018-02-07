@@ -15,7 +15,6 @@ import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
 import com.indago.gurobi.GurobiInstaller;
-import com.indago.log.LoggingPanel;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -38,8 +37,6 @@ import com.indago.tr2d.ui.util.UniversalFileChooser;
 import com.indago.tr2d.ui.view.Tr2dMainPanel;
 import com.indago.util.OSValidator;
 
-import gurobi.GRBEnv;
-import gurobi.GRBException;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
@@ -56,7 +53,6 @@ import net.imagej.DatasetService;
 import net.imagej.ops.OpMatchingService;
 import net.imagej.ops.OpService;
 import org.scijava.log.Logger;
-import sun.awt.TracedEventQueue;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -223,8 +219,6 @@ public class Tr2dApplication {
 	private void openStackOrProjectUserInteraction() {
 		UniversalFileChooser.showOptionPaneWithTitleOnMac = true;
 
-		File projectFolderBasePath = null;
-		if ( projectFolder != null ) projectFolderBasePath = projectFolder.getFolder();
 
 		final Object[] options = { "Tr2d Project...", "TIFF Stack..." };
 		final int choice = JOptionPane.showOptionDialog(
@@ -237,59 +231,74 @@ public class Tr2dApplication {
 				options,
 				options[ 0 ] );
 		if ( choice == 0 ) { // ===== PROJECT =====
-			UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
-			projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
-					guiFrame,
-					"",
-					"Choose tr2d project folder..." );
-			UniversalFileChooser.showOptionPaneWithTitleOnMac = true;
-			if ( projectFolderBasePath == null ) {
-				quit( 1 );
-			}
-			openProjectFolder(projectFolderBasePath);
+			openProjectUserInteraction();
 		} else if ( choice == 1 ) { // ===== TIFF STACK =====
-			inputStack = UniversalFileChooser.showLoadFileChooser(
-					guiFrame,
-					"",
-					"Load input tiff stack...",
-					new ExtensionFileFilter( "tif", "TIFF Image Stack" ) );
-			if ( inputStack == null ) {
-				quit( 1 );
-			}
-
-			boolean validSelection = false;
-			while ( !validSelection ) {
-				projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
-						guiFrame,
-						inputStack.getParent(),
-						"Choose tr2d project folder..." );
-				if ( projectFolderBasePath == null ) {
-					quit( 2 );
-				}
-				try {
-					projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
-				} catch ( final IOException e ) {
-					log.error(
-							String.format( "ERROR: Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
-					e.printStackTrace();
-					quit( 2 );
-				}
-				if ( projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).exists() ) {
-					final String msg = String.format(
-							"Chosen project folder exists (%s).\nShould this project be overwritten?\nCurrent data in this project will be lost!",
-							projectFolderBasePath );
-					final int overwrite = JOptionPane.showConfirmDialog( guiFrame, msg, "Project Folder Exists", JOptionPane.YES_NO_OPTION );
-					if ( overwrite == JOptionPane.YES_OPTION ) {
-						validSelection = true;
-					}
-				} else {
-					validSelection = true;
-				}
-			}
-			projectFolder.restartWithRawDataFile( inputStack.getAbsolutePath() );
+			openStackUserInteraction();
 		}
 
 		UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
+	}
+
+	private void openStackUserInteraction()
+	{
+		chooseStackUserInteraction();
+		boolean validSelection = false;
+		while ( !validSelection )
+			validSelection = chooseProjectFolderUserInteraction();
+		projectFolder.restartWithRawDataFile( inputStack.getAbsolutePath() );
+	}
+
+	private boolean chooseProjectFolderUserInteraction()
+	{
+		File projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
+				guiFrame,
+				inputStack.getParent(),
+				"Choose tr2d project folder..." );
+		if ( projectFolderBasePath == null ) {
+			quit( 2 );
+		}
+		try {
+			projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
+		} catch ( final IOException e ) {
+			log.error(
+					String.format( "ERROR: Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
+			e.printStackTrace();
+			quit( 2 );
+		}
+		if ( ! projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).exists() )
+			return true;
+
+		final String msg = String.format(
+				"Chosen project folder exists (%s).\nShould this project be overwritten?\nCurrent data in this project will be lost!",
+				projectFolderBasePath );
+		final int overwrite = JOptionPane.showConfirmDialog( guiFrame, msg, "Project Folder Exists", JOptionPane.YES_NO_OPTION );
+		return overwrite == JOptionPane.YES_OPTION;
+	}
+
+	private void chooseStackUserInteraction()
+	{
+		inputStack = UniversalFileChooser.showLoadFileChooser(
+				guiFrame,
+				"",
+				"Load input tiff stack...",
+				new ExtensionFileFilter( "tif", "TIFF Image Stack" ) );
+		if ( inputStack == null ) {
+			quit( 1 );
+		}
+	}
+
+	private void openProjectUserInteraction()
+	{
+		UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
+		File projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
+				guiFrame,
+				"",
+				"Choose tr2d project folder..." );
+		UniversalFileChooser.showOptionPaneWithTitleOnMac = true;
+		if ( projectFolderBasePath == null ) {
+			quit( 1 );
+		}
+		openProjectFolder(projectFolderBasePath);
 	}
 
 	private ImagePlus openImageStack() {
