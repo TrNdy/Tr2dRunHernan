@@ -56,6 +56,7 @@ import net.imagej.DatasetService;
 import net.imagej.ops.OpMatchingService;
 import net.imagej.ops.OpService;
 import org.scijava.log.Logger;
+import sun.awt.TracedEventQueue;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -68,53 +69,60 @@ public class Tr2dApplication {
 	/**
 	 * true, iff this app is not started by the imagej2/fiji plugin (tr2d_)
 	 */
-	public static boolean isStandalone = true;
+	private final boolean isStandalone;
 
-	private static JFrame guiFrame;
-	private static Tr2dMainPanel mainPanel;
+	private JFrame guiFrame;
+	private Tr2dMainPanel mainPanel;
 
-	private static File inputStack;
-	private static Tr2dProjectFolder projectFolder;
+	private File inputStack;
+	private Tr2dProjectFolder projectFolder;
 
-	private static File exportFolder;
-	private static int minTime = 0;
-	private static int maxTime = Integer.MAX_VALUE;
+	private File exportFolder;
+	private int minTime = 0;
+	private int maxTime = Integer.MAX_VALUE;
 
-	private static boolean autoRun = false;
+	private boolean autoRun = false;
 
-	public static OpService ops = null;
-	public static Tr2dSegmentationPluginService segPlugins = null;
+	private final OpService ops;
+	private final Tr2dSegmentationPluginService segPlugins;
 
-	public static Logger log;
+	private final Logger log;
 
 	public static void main( final String[] args ) {
+		new Tr2dApplication().run(args);
+	}
+
+	public Tr2dApplication() {
+		isStandalone = true;
+		final ImageJ temp = IJ.getInstance();
+		if ( temp == null ) {
+			new ImageJ();
+		}
+
+		final Context context = new Context( FormatService.class, OpService.class, OpMatchingService.class,
+				IOService.class, DatasetIOService.class, LocationService.class, DatasetService.class,
+				ImgUtilityService.class, StatusService.class, TranslatorService.class, QTJavaService.class,
+				TiffService.class, CodecService.class, JAIIIOService.class, LogService.class, Tr2dSegmentationPluginService.class );
+		ops = context.getService( OpService.class );
+		segPlugins = context.getService( Tr2dSegmentationPluginService.class );
+		log = context.getService( LogService.class ).subLogger("tr2d");
+		log.info( "STANDALONE" );
+	}
+
+	public Tr2dApplication( OpService opService, Tr2dSegmentationPluginService tr2dSegmentationPluginService, Logger log )
+	{
+		isStandalone = false;
+		if(tr2dSegmentationPluginService == null)
+			log.error( "Tr2dPlugin failed to set the Tr2dSegmentationPluginService!" );
+		ops = opService;
+		segPlugins = tr2dSegmentationPluginService;
+		this.log = log;
+		log.info( "PLUGIN" );
+	}
+
+	public void run( final String[] args ) {
 
 		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
-
-		if ( isStandalone ) { // main NOT called via Tr2dPlugin
-			final ImageJ temp = IJ.getInstance();
-			if ( temp == null ) {
-				new ImageJ();
-			}
-
-			// Create context (since we did not receive one that was injected in 'Tr2dPlugin')
-			final Context context =
-					new Context( FormatService.class, OpService.class, OpMatchingService.class, IOService.class, DatasetIOService.class, LocationService.class, DatasetService.class, ImgUtilityService.class, StatusService.class, TranslatorService.class, QTJavaService.class, TiffService.class, CodecService.class, JAIIIOService.class, LogService.class, Tr2dSegmentationPluginService.class );
-//			ImageSaver.context = context;
-			ops = context.getService( OpService.class );
-			segPlugins = context.getService( Tr2dSegmentationPluginService.class );
-
-			log = context.getService( LogService.class ).subLogger("tr2d");
-			log.info( "STANDALONE" );
-
-		} else {
-			log.info( "PLUGIN" );
-
-			// Check that all is set as it should...
-			if ( segPlugins == null ) {
-				log.error( "Tr2dPlugin failed to set the Tr2dSegmentationPluginService!" );
-			}
-		}
 
 		// GET THE APP SPECIFIC LOGGER
 		// ---------------------------
@@ -155,11 +163,11 @@ public class Tr2dApplication {
 		}
 	}
 
-	private static void setFrameSizeAndCloseOperation() {
+	private void setFrameSizeAndCloseOperation() {
 		try {
 			FrameProperties.load( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
 		} catch ( final IOException e ) {
-			Tr2dApplication.log.warn( "Frame properties not found. Will use default values." );
+			log.warn( "Frame properties not found. Will use default values." );
 			guiFrame.setBounds( FrameProperties.getCenteredRectangle( 1200, 1024 ) );
 		}
 
@@ -184,16 +192,16 @@ public class Tr2dApplication {
 					try {
 						FrameProperties.save( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
 					} catch ( final Exception e ) {
-						Tr2dApplication.log.error( "Could not save frame properties in project folder!" );
+						log.error( "Could not save frame properties in project folder!" );
 						e.printStackTrace();
 					}
-					Tr2dApplication.quit( 0 );
+					quit( 0 );
 				}
 			}
 		} );
 	}
 
-	private static void runOptionalExport() {
+	private void runOptionalExport() {
 		if( exportFolder != null )
 			mainPanel.getTabExport().schnitzcellExport( exportFolder );
 	}
@@ -201,7 +209,7 @@ public class Tr2dApplication {
 	/**
 	 * @param exit_value
 	 */
-	public static void quit( final int exit_value ) {
+	public void quit( final int exit_value ) {
 		if(guiFrame != null)
 			guiFrame.dispose();
 		if ( isStandalone ) {
@@ -212,7 +220,7 @@ public class Tr2dApplication {
 	/**
 	 * @return
 	 */
-	private static void openStackOrProjectUserInteraction() {
+	private void openStackOrProjectUserInteraction() {
 		UniversalFileChooser.showOptionPaneWithTitleOnMac = true;
 
 		File projectFolderBasePath = null;
@@ -236,7 +244,7 @@ public class Tr2dApplication {
 					"Choose tr2d project folder..." );
 			UniversalFileChooser.showOptionPaneWithTitleOnMac = true;
 			if ( projectFolderBasePath == null ) {
-				Tr2dApplication.quit( 1 );
+				quit( 1 );
 			}
 			openProjectFolder(projectFolderBasePath);
 		} else if ( choice == 1 ) { // ===== TIFF STACK =====
@@ -246,7 +254,7 @@ public class Tr2dApplication {
 					"Load input tiff stack...",
 					new ExtensionFileFilter( "tif", "TIFF Image Stack" ) );
 			if ( inputStack == null ) {
-				Tr2dApplication.quit( 1 );
+				quit( 1 );
 			}
 
 			boolean validSelection = false;
@@ -256,15 +264,15 @@ public class Tr2dApplication {
 						inputStack.getParent(),
 						"Choose tr2d project folder..." );
 				if ( projectFolderBasePath == null ) {
-					Tr2dApplication.quit( 2 );
+					quit( 2 );
 				}
 				try {
 					projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
 				} catch ( final IOException e ) {
-					Tr2dApplication.log.error(
+					log.error(
 							String.format( "ERROR: Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
 					e.printStackTrace();
-					Tr2dApplication.quit( 2 );
+					quit( 2 );
 				}
 				if ( projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).exists() ) {
 					final String msg = String.format(
@@ -284,14 +292,14 @@ public class Tr2dApplication {
 		UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
 	}
 
-	private static ImagePlus openImageStack() {
+	private ImagePlus openImageStack() {
 		ImagePlus imgPlus = null;
 		if ( inputStack != null ) {
 //			IJ.open( inputStack.getAbsolutePath() );
 			imgPlus = IJ.openImage( inputStack.getAbsolutePath() );
 			if ( imgPlus == null ) {
 				IJ.error( "There must be an active, open window!" );
-				Tr2dApplication.quit( 4 );
+				quit( 4 );
 			}
 		}
 		return imgPlus;
@@ -300,7 +308,7 @@ public class Tr2dApplication {
 	/**
 	 *
 	 */
-	private static void setImageAppIcon() {
+	private void setImageAppIcon() {
 		Image image = null;
 		try {
 			image = new ImageIcon( Tr2dApplication.class.getClassLoader().getResource( "tr2d_dais_icon_color.png" ) ).getImage();
@@ -309,16 +317,16 @@ public class Tr2dApplication {
 				image = new ImageIcon( Tr2dApplication.class.getClassLoader().getResource(
 						"resources/tr2d_dais_icon_color.png" ) ).getImage();
 			} catch ( final Exception e2 ) {
-				Tr2dApplication.log.error( "app icon not found..." );
+				log.error( "app icon not found..." );
 			}
 		}
 
 		if ( image != null ) {
 			if ( OSValidator.isMac() ) {
-				Tr2dApplication.log.info( "On a Mac! --> trying to set icons..." );
+				log.info( "On a Mac! --> trying to set icons..." );
 				Application.getApplication().setDockIconImage( image );
 			} else {
-				Tr2dApplication.log.info( "Not a Mac! --> trying to set icons..." );
+				log.info( "Not a Mac! --> trying to set icons..." );
 				guiFrame.setIconImage( image );
 			}
 		}
@@ -328,7 +336,7 @@ public class Tr2dApplication {
 	 * Check if GRBEnv can be instantiated. For this to work Gurobi has to be
 	 * installed and a valid license has to be pulled.
 	 */
-	private static void checkGurobiAvailability() {
+	private void checkGurobiAvailability() {
 		final String jlp = System.getProperty( "java.library.path" );
 		if ( !GurobiInstaller.testGurobi() ) {
 			final String msgs = "Initial Gurobi test threw exception... check your Gruobi setup!\n\nJava library path: " + jlp;
@@ -337,22 +345,79 @@ public class Tr2dApplication {
 					msgs,
 					"Gurobi Error?",
 					JOptionPane.ERROR_MESSAGE);
-			Tr2dApplication.quit(98);
+			quit(98);
 		}
 	}
 
 	/**
-	 * Parse command line arguments and set static variables accordingly.
+	 * Parse command line arguments and set variables accordingly.
 	 *
 	 * @param args
 	 */
-	private static void parseCommandLineArgs( final String[] args ) {
+	private void parseCommandLineArgs( final String[] args ) {
 		final String helpMessageLine1 =
 				"Tr2d args: [-uprops properties-file] -p project-folder [-run] [-i input-stack] [-tmin idx] [-tmax idx] [-orange num-frames] [-e export-folder]";
+		final Options options = getOptions();
 
+		// get the commands parsed
+		final CommandLineParser parser = new BasicParser();
+		CommandLine cmd = null;
+		try {
+			cmd = parser.parse( options, args );
+		} catch ( final ParseException e1 ) {
+			final HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp(
+					helpMessageLine1,
+					"",
+					options,
+					"Error: " + e1.getMessage() );
+			quit( 0 );
+		}
+
+		if ( cmd.hasOption( "help" ) ) {
+			final HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp( helpMessageLine1, options );
+			quit( 0 );
+		}
+
+		final File projectFolderBasePath = checkWritableFolderOption(cmd, "p", "project folder");
+
+		exportFolder = checkWritableFolderOption(cmd, "e", "project folder");
+
+		inputStack = null;
+		if ( cmd.hasOption( "i" ) ) {
+			inputStack = new File( cmd.getOptionValue( "i" ) );
+			if ( !inputStack.isFile() )
+				showErrorAndExit(5, "Given input tiff stack could not be found!");
+			if ( !inputStack.canRead() )
+				showErrorAndExit(6, "Given input tiff stack is not readable!");
+		} else if ( projectFolderBasePath != null ) { // if a project folder was given load data from there!
+			openProjectFolder(projectFolderBasePath);
+		}
+
+		if ( cmd.hasOption( "tmin" ) ) {
+			minTime = Integer.parseInt( cmd.getOptionValue( "tmin" ) );
+			if ( minTime < 0 )
+				showWarning("Argument 'tmin' cannot be smaller than 0... using tmin=0...");
+		}
+		if ( cmd.hasOption( "tmax" ) ) {
+			maxTime = Integer.parseInt( cmd.getOptionValue( "tmax" ) );
+			if ( maxTime < minTime ) {
+				maxTime = minTime + 1;
+				showWarning( "Argument 'tmax' cannot be smaller than 'tmin'... using tmax=%d...",
+						maxTime );
+			}
+		}
+
+		if ( cmd.hasOption( "run" ) ) {
+			autoRun = true;
+		}
+	}
+
+	private Options getOptions()
+	{
 		// create Options object & the parser
 		final Options options = new Options();
-		final CommandLineParser parser = new BasicParser();
 		// defining command line options
 		final Option help = new Option( "help", "print this message" );
 
@@ -389,61 +454,10 @@ public class Tr2dApplication {
 		options.addOption( projectfolder );
 		options.addOption( userProps );
 		options.addOption( exportFolder );
-		// get the commands parsed
-		CommandLine cmd = null;
-		try {
-			cmd = parser.parse( options, args );
-		} catch ( final ParseException e1 ) {
-			final HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp(
-					helpMessageLine1,
-					"",
-					options,
-					"Error: " + e1.getMessage() );
-			Tr2dApplication.quit( 0 );
-		}
-
-		if ( cmd.hasOption( "help" ) ) {
-			final HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp( helpMessageLine1, options );
-			Tr2dApplication.quit( 0 );
-		}
-
-		final File projectFolderBasePath = checkWritableFolderOption(cmd, "p", "project folder");
-
-		Tr2dApplication.exportFolder = checkWritableFolderOption(cmd, "e", "project folder");
-
-		inputStack = null;
-		if ( cmd.hasOption( "i" ) ) {
-			inputStack = new File( cmd.getOptionValue( "i" ) );
-			if ( !inputStack.isFile() )
-				showErrorAndExit(5, "Given input tiff stack could not be found!");
-			if ( !inputStack.canRead() )
-				showErrorAndExit(6, "Given input tiff stack is not readable!");
-		} else if ( projectFolderBasePath != null ) { // if a project folder was given load data from there!
-			openProjectFolder(projectFolderBasePath);
-		}
-
-		if ( cmd.hasOption( "tmin" ) ) {
-			minTime = Integer.parseInt( cmd.getOptionValue( "tmin" ) );
-			if ( minTime < 0 )
-				showWarning("Argument 'tmin' cannot be smaller than 0... using tmin=0...");
-		}
-		if ( cmd.hasOption( "tmax" ) ) {
-			maxTime = Integer.parseInt( cmd.getOptionValue( "tmax" ) );
-			if ( maxTime < minTime ) {
-				maxTime = minTime + 1;
-				showWarning( "Argument 'tmax' cannot be smaller than 'tmin'... using tmax=%d...",
-						maxTime );
-			}
-		}
-
-		if ( cmd.hasOption( "run" ) ) {
-			autoRun = true;
-		}
+		return options;
 	}
 
-	private static File checkWritableFolderOption(final CommandLine cmd, final String shortOption, final String displayName) {
+	private File checkWritableFolderOption(final CommandLine cmd, final String shortOption, final String displayName) {
 		File result = null;
 		if ( cmd.hasOption( shortOption ) ) {
 			result = new File( cmd.getOptionValue( shortOption ) );
@@ -457,20 +471,20 @@ public class Tr2dApplication {
 		return result;
 	}
 
-	private static void showWarning(final String msg, final Object... data) {
+	private void showWarning(final String msg, final Object... data) {
 		JOptionPane.showMessageDialog( guiFrame, String.format(msg, data),
 				"Argument Warning", JOptionPane.WARNING_MESSAGE );
-		Tr2dApplication.log.warn( msg );
+		log.warn( msg );
 	}
 
-	private static void showErrorAndExit(final int exit_value, final String msg, final Object... data) {
+	private void showErrorAndExit(final int exit_value, final String msg, final Object... data) {
 		JOptionPane.showMessageDialog(guiFrame, String.format(msg, data),
 				"Argument Error", JOptionPane.ERROR_MESSAGE);
-		Tr2dApplication.log.error(msg);
-		Tr2dApplication.quit(exit_value);
+		log.error(msg);
+		quit(exit_value);
 	}
 
-	private static void openProjectFolder(final File projectFolderBasePath) {
+	private void openProjectFolder(final File projectFolderBasePath) {
 		try {
 			projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
 			inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();

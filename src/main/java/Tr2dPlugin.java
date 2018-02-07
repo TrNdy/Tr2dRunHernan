@@ -23,6 +23,9 @@ public class Tr2dPlugin implements Command {
 	private OpService opService;
 
 	@Parameter
+	private Tr2dSegmentationPluginService tr2dSegmentationPluginService;
+
+	@Parameter
 	private Logger log;
 
 	/**
@@ -30,18 +33,15 @@ public class Tr2dPlugin implements Command {
 	 */
 	@Override
 	public void run() {
-		Tr2dApplication.isStandalone = false;
-		Tr2dApplication.ops = opService;
-		Tr2dApplication.segPlugins = opService.context().getService( Tr2dSegmentationPluginService.class );
-		Tr2dApplication.log = log;
-
 		boolean gurobiWorks = GurobiInstaller.install();
 
 		if(gurobiWorks) {
+			Tr2dApplication app = new Tr2dApplication( opService, tr2dSegmentationPluginService, log );
 			try {
-				Tr2dApplication.main( null );
+				app.run( null );
 			} catch ( final NoClassDefFoundError err ) {
 				showGurobiErrorMessage( err );
+				app.quit( 100 );
 			}
 		}
 		else
@@ -60,6 +60,5 @@ public class Tr2dPlugin implements Command {
 				"Gurobi not installed?",
 				JOptionPane.ERROR_MESSAGE );
 		err.printStackTrace();
-		Tr2dApplication.quit( 100 );
 	}
 }
