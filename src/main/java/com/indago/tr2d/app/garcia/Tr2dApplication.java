@@ -502,24 +502,4 @@ public class Tr2dApplication {
 		}
 	}
 
-	/**
-	 * @return the guiFrame
-	 */
-	public static JFrame getGuiFrame() {
-		return guiFrame;
-	}
-
-	/**
-	 * @return the mainPanel
-	 */
-	public static Tr2dMainPanel getMainPanel() {
-		return mainPanel;
-	}
-
-	/**
-	 * @return the mainPanel
-	 */
-	public static LoggingPanel getLogPanel() {
-		return mainPanel.getLogPanel();
-	}
 }
