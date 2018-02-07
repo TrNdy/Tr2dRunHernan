@@ -76,11 +76,9 @@ public class Tr2dApplication {
 	private static File inputStack;
 	private static Tr2dProjectFolder projectFolder;
 
-	private static File fileUserProps;
 	private static File exportFolder;
 	private static int minTime = 0;
 	private static int maxTime = Integer.MAX_VALUE;
-	private static int initOptRange = Integer.MAX_VALUE;
 
 	private static boolean autoRun = false;
 
@@ -364,7 +362,7 @@ public class Tr2dApplication {
 		final Option timeLast = new Option( "tmax", "max_time", true, "last time-point to be processed" );
 		timeLast.setRequired( false );
 
-		final Option optRange = new Option( "orange", "opt_range", true, "initial optimization range" );
+		final Option optRange = new Option( "orange", "opt_range", true, "obsolete parameter" );
 		optRange.setRequired( false );
 
 		final Option projectfolder = new Option( "p", "projectfolder", true, "tr2d project folder" );
@@ -376,7 +374,7 @@ public class Tr2dApplication {
 		final Option run = new Option( "r", "run", false, "auto-run tracking upon start" );
 		instack.setRequired( false );
 
-		final Option userProps = new Option( "uprops", "userprops", true, "user properties file to be loaded" );
+		final Option userProps = new Option( "uprops", "userprops", true, "obsolete parameter" );
 		userProps.setRequired( false );
 
 		final Option exportFolder = new Option( "e", "export_folder", true, "Write results to this folder when closing tr2d." );
@@ -426,14 +424,6 @@ public class Tr2dApplication {
 			openProjectFolder(projectFolderBasePath);
 		}
 
-		fileUserProps = null;
-		if ( cmd.hasOption( "uprops" ) ) {
-			fileUserProps = new File( cmd.getOptionValue( "uprops" ) );
-			if ( !inputStack.canRead() )
-				showWarning( "User properties file not readable (%s). Continue without...",
-						fileUserProps.getAbsolutePath() );
-		}
-
 		if ( cmd.hasOption( "tmin" ) ) {
 			minTime = Integer.parseInt( cmd.getOptionValue( "tmin" ) );
 			if ( minTime < 0 )
@@ -445,15 +435,6 @@ public class Tr2dApplication {
 				maxTime = minTime + 1;
 				showWarning( "Argument 'tmax' cannot be smaller than 'tmin'... using tmax=%d...",
 						maxTime );
-			}
-		}
-
-		if ( cmd.hasOption( "orange" ) ) {
-			initOptRange = Integer.parseInt( cmd.getOptionValue( "orange" ) );
-			if ( initOptRange > maxTime - minTime ) {
-				initOptRange = maxTime - minTime;
-				showWarning( "Argument 'orange' (initial optimization range in frames)" +
-						" too large... using %d instead...", initOptRange );
 			}
 		}
 
