@@ -8,14 +8,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
-import com.indago.gurobi.GurobiInstaller;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -27,8 +25,10 @@ import org.scijava.Context;
 import org.scijava.app.StatusService;
 import org.scijava.io.IOService;
 import org.scijava.log.LogService;
+import org.scijava.log.Logger;
 
 import com.apple.eawt.Application;
+import com.indago.gurobi.GurobiInstaller;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
@@ -53,7 +53,6 @@ import io.scif.services.TranslatorService;
 import net.imagej.DatasetService;
 import net.imagej.ops.OpMatchingService;
 import net.imagej.ops.OpService;
-import org.scijava.log.Logger;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -106,7 +105,7 @@ public class Tr2dApplication {
 		log.info( "STANDALONE" );
 	}
 
-	public Tr2dApplication( OpService opService, Tr2dSegmentationPluginService tr2dSegmentationPluginService, Logger log )
+	public Tr2dApplication( final OpService opService, final Tr2dSegmentationPluginService tr2dSegmentationPluginService, final Logger log )
 	{
 		isStandalone = false;
 		if(tr2dSegmentationPluginService == null)
@@ -243,55 +242,66 @@ public class Tr2dApplication {
 	private void openStackUserInteraction()
 	{
 		chooseStackUserInteraction();
+
 		boolean validSelection = false;
-		while ( !validSelection )
+		while ( !validSelection ) {
 			validSelection = chooseProjectFolderUserInteraction();
-		try {
-			projectFolder.restartWithRawDataFile( inputStack.getAbsolutePath() );
-		} catch ( IOException | IllegalArgumentException e ) {
-			log.error( String.format( "Failed to create project folder (%s), with input stack (%s).",
-					projectFolder.getAbsolutePath(), inputStack.getAbsolutePath() ) );
-			e.printStackTrace();
-			quit( 3 );
 		}
 	}
 
-	private boolean chooseProjectFolderUserInteraction()
-	{
-		File projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
+	private boolean chooseProjectFolderUserInteraction() {
+		// Ask for folder...
+		final File fileProjectFolder = UniversalFileChooser.showLoadFolderChooser(
 				guiFrame,
 				inputStack.getParent(),
 				"Choose tr2d project folder..." );
-		if ( projectFolderBasePath == null ) {
-			quit( 2 );
-		}
-		try {
-			projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
-		} catch ( final IOException e ) {
-			log.error(
-					String.format( "ERROR: Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
-			e.printStackTrace();
+		if ( fileProjectFolder == null ) {
 			quit( 2 );
 		}
 
-		boolean rawFileExists = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).exists();
-		if ( rawFileExists ) {
+		// Create the uninitialized project folder
+		try {
+			projectFolder = new Tr2dProjectFolder( fileProjectFolder );
+		} catch ( final IOException e ) {
+			JOptionPane.showConfirmDialog(
+					guiFrame,
+					"Chosen project folder cannot be created.",
+					"Error",
+					JOptionPane.OK_OPTION );
+			return false;
+		}
+
+		// If it IS a project folder... ask if it is ok to overwrite it...
+		if ( Tr2dProjectFolder.isValidProjectFolder( fileProjectFolder ) ) {
 			final String msg = String.format(
 					"Chosen project folder exists (%s).\nShould this project be overwritten?\nCurrent data in this project will be lost!",
-					projectFolderBasePath );
+					fileProjectFolder );
 			final int overwrite = JOptionPane.showConfirmDialog( guiFrame, msg, "Project Folder Exists", JOptionPane.YES_NO_OPTION );
-			return overwrite == JOptionPane.YES_OPTION;
-		}
-		else  {
-			boolean directoryIsEmpty = projectFolderBasePath.list().length == 0;
-			if(!directoryIsEmpty)
-			{
-				final int result = JOptionPane.showConfirmDialog( guiFrame, "Chosen project folder must be empty.", "Project Folder Not Empty", JOptionPane.OK_CANCEL_OPTION );
-				if (result != JOptionPane.OK_OPTION)
-					quit( 1 );
+			if ( overwrite == JOptionPane.NO_OPTION ) return false;
+		} else {
+			// If it is NOT empty, point it out and refuse...
+			// (NOTE: some OSes create hidden files right away into new folders. They start with '.'!)
+			final File[] content = fileProjectFolder.listFiles();
+			for ( final File f : content ) {
+				if ( !f.getName().startsWith( "." ) ) {
+					final int result = JOptionPane.showConfirmDialog(
+							guiFrame,
+							"Chosen project folder must be empty. Please choose another folder.",
+							"Project Folder Not Empty",
+							JOptionPane.OK_OPTION );
+					return false;
+				}
 			}
-			return directoryIsEmpty;
 		}
+
+		try {
+			projectFolder.initialize( this.inputStack );
+		} catch ( final IOException e ) {
+			log.error( String.format( "ERROR: Project folder (%s) could not be initialized.", fileProjectFolder.getAbsolutePath() ) );
+			e.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 
 	private void chooseStackUserInteraction()
@@ -309,7 +319,7 @@ public class Tr2dApplication {
 	private void openProjectUserInteraction()
 	{
 		UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
-		File projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
+		final File projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
 				guiFrame,
 				"",
 				"Choose tr2d project folder..." );
@@ -515,6 +525,7 @@ public class Tr2dApplication {
 	private void openProjectFolder(final File projectFolderBasePath) {
 		try {
 			projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
+			projectFolder.initialize();
 			inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();
 			if ( !inputStack.canRead() || !inputStack.exists() ) {
 				showErrorAndExit(7, "Invalid project folder -- missing RAW data or read protected!");

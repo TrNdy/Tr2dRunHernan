@@ -49,6 +49,7 @@
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>tr2d</artifactId>
+			<version>0.1.5-SNAPSHOT</version>
 		</dependency>
 
 		<!-- SEGMENTATION PLUGINS -->
