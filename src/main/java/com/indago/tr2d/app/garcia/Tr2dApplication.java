@@ -14,6 +14,11 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
+import io.scif.img.converters.PlaneConverterService;
+import io.scif.services.FilePatternService;
+import io.scif.services.InitializeService;
+import io.scif.xml.XMLService;
+import loci.formats.FileStitcher;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -98,7 +103,9 @@ public class Tr2dApplication {
 		final Context context = new Context( FormatService.class, OpService.class, OpMatchingService.class,
 				IOService.class, DatasetIOService.class, LocationService.class, DatasetService.class,
 				ImgUtilityService.class, StatusService.class, TranslatorService.class, QTJavaService.class,
-				TiffService.class, CodecService.class, JAIIIOService.class, LogService.class, Tr2dSegmentationPluginService.class );
+				TiffService.class, CodecService.class, JAIIIOService.class, LogService.class,
+				Tr2dSegmentationPluginService.class, PlaneConverterService.class, InitializeService.class,
+				XMLService.class, FilePatternService.class);
 		ops = context.getService( OpService.class );
 		segPlugins = context.getService( Tr2dSegmentationPluginService.class );
 		log = context.getService( LogService.class ).subLogger("tr2d");
