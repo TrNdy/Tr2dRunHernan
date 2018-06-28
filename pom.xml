@@ -45,11 +45,23 @@
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>Indago</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.miglayout</groupId>
+					<artifactId>miglayout</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>tr2d</artifactId>
 			<version>0.1.5-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.miglayout</groupId>
+					<artifactId>miglayout</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- SEGMENTATION PLUGINS -->
@@ -60,6 +72,12 @@
 		<dependency>
 			<groupId>com.indago.tr2d</groupId>
 			<artifactId>Tr2dWekaSegmenterPlugin</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.miglayout</groupId>
+					<artifactId>miglayout</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.indago.tr2d</groupId>
