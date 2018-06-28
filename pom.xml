@@ -18,7 +18,7 @@
 
 	<groupId>com.indago.tr2d</groupId>
 	<artifactId>Tr2dRunHernan</artifactId>
-	<version>0.1.6-SNAPSHOT</version>
+	<version>0.1.6</version>
 
 	<name>Tr2dRunHernan</name>
 	<description>Runs tr2d set up to suit Hernan's needs.</description>
@@ -119,7 +119,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/TrNdy/Tr2dRunHernan</connection>
 		<developerConnection>scm:git:git@github.com:TrNdy/Tr2dRunHernan</developerConnection>
-		<tag>HEAD</tag>
+		<tag>Tr2dRunHernan-0.1.6</tag>
 		<url>https://github.com/TrNdy/Tr2dRunHernan</url>
 	</scm>
 	<issueManagement>
