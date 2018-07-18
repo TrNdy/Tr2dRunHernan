@@ -152,7 +152,7 @@ public class Tr2dApplication {
 			mainPanel = new Tr2dMainPanel( guiFrame, model, log );
 
 			guiFrame.getContentPane().add( mainPanel );
-			setFrameSizeAndCloseOperation();
+			setFrameSizeAndCloseOperation( model );
 			guiFrame.setVisible( true );
 			mainPanel.collapseLog();
 
@@ -166,7 +166,7 @@ public class Tr2dApplication {
 		}
 	}
 
-	private void setFrameSizeAndCloseOperation() {
+	private void setFrameSizeAndCloseOperation( Tr2dModel model ) {
 		try {
 			FrameProperties.load( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
 		} catch ( final IOException e ) {
@@ -192,6 +192,7 @@ public class Tr2dApplication {
 				if ( choice == 0 ) {
 					runOptionalExport();
 
+					model.close();
 					try {
 						FrameProperties.save( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
 					} catch ( final Exception e ) {
