@@ -64,6 +64,7 @@
 		<dependency>
 			<groupId>com.indago.tr2d</groupId>
 			<artifactId>Tr2dLabkitSegmentationPlugin</artifactId>
+			<version>0.1.5-SNAPSHOT</version>
 		</dependency>
 
 		<!-- OTHER DEPENDENCIES -->
