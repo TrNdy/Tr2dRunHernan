@@ -58,6 +58,7 @@ import io.scif.services.TranslatorService;
 import net.imagej.DatasetService;
 import net.imagej.ops.OpMatchingService;
 import net.imagej.ops.OpService;
+import org.scijava.widget.WidgetService;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -105,7 +106,7 @@ public class Tr2dApplication {
 				ImgUtilityService.class, StatusService.class, TranslatorService.class, QTJavaService.class,
 				TiffService.class, CodecService.class, JAIIIOService.class, LogService.class,
 				Tr2dSegmentationPluginService.class, PlaneConverterService.class, InitializeService.class,
-				XMLService.class, FilePatternService.class);
+				XMLService.class, FilePatternService.class, WidgetService.class);
 		ops = context.getService( OpService.class );
 		segPlugins = context.getService( Tr2dSegmentationPluginService.class );
 		log = context.getService( LogService.class ).subLogger("tr2d");
