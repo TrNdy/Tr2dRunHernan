@@ -18,7 +18,6 @@ import io.scif.img.converters.PlaneConverterService;
 import io.scif.services.FilePatternService;
 import io.scif.services.InitializeService;
 import io.scif.xml.XMLService;
-import loci.formats.FileStitcher;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
