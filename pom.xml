@@ -57,14 +57,17 @@
 		<dependency>
 			<groupId>com.indago.tr2d</groupId>
 			<artifactId>Tr2dSegmentationImportPlugin</artifactId>
+			<version>0.1.4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.indago.tr2d</groupId>
 			<artifactId>Tr2dWekaSegmenterPlugin</artifactId>
+			<version>0.1.4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.indago.tr2d</groupId>
 			<artifactId>Tr2dLabkitSegmentationPlugin</artifactId>
+			<version>0.1.8-SNAPSHOT</version>
 		</dependency>
 
 		<!-- OTHER DEPENDENCIES -->

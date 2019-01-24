@@ -35,7 +35,7 @@ import com.apple.eawt.Application;
 import com.indago.gurobi.GurobiInstaller;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
-import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
+import com.indago.tr2d.plugins.seg.IndagoSegmentationPluginService;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.FrameProperties;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
@@ -85,7 +85,7 @@ public class Tr2dApplication {
 	private boolean autoRun = false;
 
 	private final OpService ops;
-	private final Tr2dSegmentationPluginService segPlugins;
+	private final IndagoSegmentationPluginService segPlugins;
 
 	private final Logger log;
 
@@ -104,15 +104,15 @@ public class Tr2dApplication {
 				IOService.class, DatasetIOService.class, LocationService.class, DatasetService.class,
 				ImgUtilityService.class, StatusService.class, TranslatorService.class, QTJavaService.class,
 				TiffService.class, CodecService.class, JAIIIOService.class, LogService.class,
-				Tr2dSegmentationPluginService.class, PlaneConverterService.class, InitializeService.class,
+				IndagoSegmentationPluginService.class, PlaneConverterService.class, InitializeService.class,
 				XMLService.class, FilePatternService.class, WidgetService.class);
 		ops = context.getService( OpService.class );
-		segPlugins = context.getService( Tr2dSegmentationPluginService.class );
+		segPlugins = context.getService( IndagoSegmentationPluginService.class );
 		log = context.getService( LogService.class ).subLogger("tr2d");
 		log.info( "STANDALONE" );
 	}
 
-	public Tr2dApplication( final OpService opService, final Tr2dSegmentationPluginService tr2dSegmentationPluginService, final Logger log )
+	public Tr2dApplication( final OpService opService, final IndagoSegmentationPluginService tr2dSegmentationPluginService, final Logger log )
 	{
 		isStandalone = false;
 		if(tr2dSegmentationPluginService == null)

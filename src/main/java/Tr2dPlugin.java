@@ -1,6 +1,6 @@
 import com.indago.gurobi.GurobiInstaller;
 import com.indago.tr2d.app.garcia.Tr2dApplication;
-import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
+import com.indago.tr2d.plugins.seg.IndagoSegmentationPluginService;
 import net.imagej.ops.OpService;
 import org.scijava.command.Command;
 import org.scijava.command.ContextCommand;
@@ -23,7 +23,7 @@ public class Tr2dPlugin implements Command {
 	private OpService opService;
 
 	@Parameter
-	private Tr2dSegmentationPluginService tr2dSegmentationPluginService;
+	private IndagoSegmentationPluginService tr2dSegmentationPluginService;
 
 	@Parameter
 	private Logger log;
