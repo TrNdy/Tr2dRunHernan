@@ -1,6 +1,7 @@
 import com.indago.gurobi.GurobiInstaller;
+import com.indago.plugins.seg.IndagoSegmentationPluginService;
 import com.indago.tr2d.app.garcia.Tr2dApplication;
-import com.indago.tr2d.plugins.seg.IndagoSegmentationPluginService;
+
 import net.imagej.ops.OpService;
 import org.scijava.command.Command;
 import org.scijava.command.ContextCommand;
