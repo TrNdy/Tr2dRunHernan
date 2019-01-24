@@ -1,4 +1,5 @@
 .DS_Store
+*.releaseBackup
 /target/
 .classpath
 .project

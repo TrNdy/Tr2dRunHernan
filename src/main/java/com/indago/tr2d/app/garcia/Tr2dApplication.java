@@ -33,13 +33,13 @@ import org.scijava.log.Logger;
 
 import com.apple.eawt.Application;
 import com.indago.gurobi.GurobiInstaller;
+import com.indago.plugins.seg.IndagoSegmentationPluginService;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
-import com.indago.tr2d.plugins.seg.IndagoSegmentationPluginService;
 import com.indago.tr2d.ui.model.Tr2dModel;
-import com.indago.tr2d.ui.util.FrameProperties;
-import com.indago.tr2d.ui.util.UniversalFileChooser;
 import com.indago.tr2d.ui.view.Tr2dMainPanel;
+import com.indago.ui.util.FrameProperties;
+import com.indago.ui.util.UniversalFileChooser;
 import com.indago.util.OSValidator;
 
 import ij.IJ;
