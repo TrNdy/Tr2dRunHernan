@@ -45,10 +45,12 @@
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>Indago</artifactId>
+			<version>0.1.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>tr2d</artifactId>
+			<version>0.1.8-SNAPSHOT</version>
 		</dependency>
 
 		<!-- SEGMENTATION PLUGINS -->
