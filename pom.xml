@@ -5,15 +5,12 @@
 	<parent>
 		<groupId>sc.fiji</groupId>
 		<artifactId>pom-indago</artifactId>
-		<version>2.2.15</version>
+		<version>2.2.16</version>
 	</parent>
 
 	<properties>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>TrNdy developers</license.copyrightOwners>
-
-		<Indago.version>0.1.10</Indago.version>
-		<tr2d.version>0.1.9</tr2d.version>
 
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
