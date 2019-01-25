@@ -12,6 +12,9 @@
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>TrNdy developers</license.copyrightOwners>
 
+		<Indago.version>0.1.10</Indago.version>
+		<tr2d.version>0.1.9</tr2d.version>
+
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 	</properties>
@@ -86,7 +89,7 @@
 			<groupId>com.apple</groupId>
 			<artifactId>AppleJavaExtensions</artifactId>
 		</dependency>
-		<!-- needed dependency for trainable weka (dunno why this is not resolved automatically) --> 
+		<!-- needed dependency for trainable weka (dunno why this is not resolved automatically) -->
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>imagescience</artifactId>
