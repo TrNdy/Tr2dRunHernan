@@ -14,6 +14,8 @@
 
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
+		
+		<tr2d.version>0.1.10-SNAPSHOT</tr2d.version>
 	</properties>
 
 	<groupId>com.indago.tr2d</groupId>
