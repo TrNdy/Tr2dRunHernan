@@ -14,10 +14,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
-import io.scif.img.converters.PlaneConverterService;
-import io.scif.services.FilePatternService;
-import io.scif.services.InitializeService;
-import io.scif.xml.XMLService;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -30,6 +26,7 @@ import org.scijava.app.StatusService;
 import org.scijava.io.IOService;
 import org.scijava.log.LogService;
 import org.scijava.log.Logger;
+import org.scijava.widget.WidgetService;
 
 import com.apple.eawt.Application;
 import com.indago.gurobi.GurobiInstaller;
@@ -49,15 +46,20 @@ import io.scif.codec.CodecService;
 import io.scif.formats.qt.QTJavaService;
 import io.scif.formats.tiff.TiffService;
 import io.scif.img.ImgUtilityService;
+import io.scif.img.converters.PlaneConverterService;
 import io.scif.services.DatasetIOService;
+import io.scif.services.FilePatternService;
 import io.scif.services.FormatService;
+import io.scif.services.InitializeService;
 import io.scif.services.JAIIIOService;
 import io.scif.services.LocationService;
 import io.scif.services.TranslatorService;
+import io.scif.xml.XMLService;
 import net.imagej.DatasetService;
+import net.imagej.ImgPlus;
 import net.imagej.ops.OpMatchingService;
 import net.imagej.ops.OpService;
-import org.scijava.widget.WidgetService;
+import net.imglib2.img.VirtualStackAdapter;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -145,7 +147,7 @@ public class Tr2dApplication {
 		if(projectFolder == null || inputStack == null)
 			openStackOrProjectUserInteraction();
 
-		final ImagePlus imgPlus = openImageStack();
+		final ImgPlus imgPlus = openImageStack();
 
 		if ( imgPlus != null ) {
 			final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
@@ -166,7 +168,7 @@ public class Tr2dApplication {
 		}
 	}
 
-	private void setFrameSizeAndCloseOperation( Tr2dModel model ) {
+	private void setFrameSizeAndCloseOperation( final Tr2dModel model ) {
 		try {
 			FrameProperties.load( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
 		} catch ( final IOException e ) {
@@ -338,16 +340,17 @@ public class Tr2dApplication {
 		openProjectFolder(projectFolderBasePath);
 	}
 
-	private ImagePlus openImageStack() {
-		ImagePlus imgPlus = null;
+	private ImgPlus openImageStack() {
+		ImagePlus imagePlus = null;
 		if ( inputStack != null ) {
 //			IJ.open( inputStack.getAbsolutePath() );
-			imgPlus = IJ.openImage( inputStack.getAbsolutePath() );
-			if ( imgPlus == null ) {
+			imagePlus = IJ.openImage( inputStack.getAbsolutePath() );
+			if ( imagePlus == null ) {
 				IJ.error( "There must be an active, open window!" );
 				quit( 4 );
 			}
 		}
+		final ImgPlus< ? > imgPlus = VirtualStackAdapter.wrap( imagePlus );
 		return imgPlus;
 	}
 
