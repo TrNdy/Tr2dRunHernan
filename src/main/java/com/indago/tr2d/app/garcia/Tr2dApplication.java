@@ -110,7 +110,7 @@ public class Tr2dApplication {
 				XMLService.class, FilePatternService.class, WidgetService.class);
 		ops = context.getService( OpService.class );
 		segPlugins = context.getService( IndagoSegmentationPluginService.class );
-		log = context.getService( LogService.class ).subLogger("tr2d");
+		log = context.getService( LogService.class );
 		log.info( "STANDALONE" );
 	}
 
@@ -151,7 +151,7 @@ public class Tr2dApplication {
 
 		if ( imgPlus != null ) {
 			final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
-			mainPanel = new Tr2dMainPanel( guiFrame, model, log );
+			mainPanel = new Tr2dMainPanel( guiFrame, model );
 
 			guiFrame.getContentPane().add( mainPanel );
 			setFrameSizeAndCloseOperation( model );

@@ -12,10 +12,14 @@
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>TrNdy developers</license.copyrightOwners>
 
+		<Indago.version>0.1.11-SNAPSHOT</Indago.version>
+		<tr2d.version>0.1.10-SNAPSHOT</tr2d.version>
+		<IndagoSegmentationImportPlugin.version>0.1.5-SNAPSHOT</IndagoSegmentationImportPlugin.version>
+		<IndagoWekaSegmenterPlugin.version>0.1.5-SNAPSHOT</IndagoWekaSegmenterPlugin.version>
+		<IndagoLabkitSegmentationPlugin.version>0.1.9-SNAPSHOT</IndagoLabkitSegmentationPlugin.version>
+
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
-		
-		<tr2d.version>0.1.10-SNAPSHOT</tr2d.version>
 	</properties>
 
 	<groupId>com.indago.tr2d</groupId>
